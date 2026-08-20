@@ -2,40 +2,180 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Respuesta Técnica</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 8px; max-width: 700px; margin: auto; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        h3 { color: #0056b3; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 2px; }
-        input, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { padding: 10px 15px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; }
-        .btn-gen { background: #28a745; color: white; }
-        .btn-copy { background: #007bff; color: white; margin-top: 5px; }
-        #output { margin-top: 15px; width: 100%; height: 250px; padding: 10px; font-family: monospace; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        h2 { color: #1e3a8a; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 20px; }
+        .section { margin-bottom: 20px; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .section h3 { font-size: 15px; color: #2563eb; margin-bottom: 10px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full { grid-column: span 2; }
+        label { font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #475569; }
+        input, textarea { padding: 8px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 13px; }
+        textarea { resize: vertical; height: 50px; }
+        .actions { margin-top: 20px; display: flex; gap: 10px; }
+        button { padding: 10px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-copy { background: #0ea5e9; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        #resultado { width: 100%; height: 220px; margin-top: 15px; font-family: monospace; font-size: 12px; background: #0f172a; color: #38bdf8; padding: 12px; border-radius: 6px; box-sizing: border-box; }
     </style>
 </head>
 <body>
-<div class="card">
-    <h2>Generador de Respuesta Técnica</h2>
-    <!-- Campos... (Usar el mismo código que te di antes, agregando el botón de abajo) -->
-    <button class="btn-gen" onclick="generar()">Generar Reporte</button>
-    <button class="btn-copy" onclick="copiar()">Copiar al portapapeles</button>
-    <textarea id="output" readonly></textarea>
+
+<div class="container">
+    <h2>🛠️ Generador de Respuesta Técnica</h2>
+    
+    <div class="form-group" style="margin-bottom: 15px;">
+        <label>ID del Ticket / Caso:</label>
+        <input type="text" id="ticketId" placeholder="Ej: INC-987654">
+    </div>
+
+    <!-- ÚLTIMA MILLA -->
+    <div class="section">
+        <h3>ÚLTIMA MILLA (UM)</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Uptime del equipo (CPE):</label>
+                <input type="text" id="um_uptime" placeholder="Ej: 5 días, 12 horas">
+            </div>
+            <div class="form-group">
+                <label>MAC Address aprendidas:</label>
+                <input type="text" id="um_mac" placeholder="Ej: 00:1A:2B:3C:4D:5E">
+            </div>
+            <div class="form-group">
+                <label>Tráfico actual en puerto LAN:</label>
+                <input type="text" id="um_trafico" placeholder="Ej: 15 Mbps / 2 Mbps">
+            </div>
+            <div class="form-group">
+                <label>Niveles de potencia óptica (RX / TX) Nodo:</label>
+                <input type="text" id="um_potencia" placeholder="Ej: -21.4 dBm / 2.1 dBm">
+            </div>
+            <div class="form-group full">
+                <label>Histórico de eventos (Flapping / Caídas) Nodo:</label>
+                <input type="text" id="um_historico" placeholder="Ej: Sin registros de flapping">
+            </div>
+        </div>
+    </div>
+
+    <!-- RED MPLS CORE -->
+    <div class="section">
+        <h3>RED MPLS CORE</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Tiempo desde el último cambio (VC):</label>
+                <input type="text" id="mpls_tiempo" placeholder="Ej: 3 semanas sin cambios">
+            </div>
+            <div class="form-group">
+                <label>Ping sobre la etiqueta VC (Resultado):</label>
+                <input type="text" id="mpls_ping" placeholder="Ej: 0% pérdida, RTT 12ms">
+            </div>
+        </div>
+    </div>
+
+    <!-- CAPA 3 / INTERNET -->
+    <div class="section">
+        <h3>VALIDACIÓN CAPA 3 & INTERNET</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Tabla ARP:</label>
+                <input type="text" id="c3_arp" placeholder="Ej: Aprendida correctamente">
+            </div>
+            <div class="form-group">
+                <label>Ping hacia IP del cliente:</label>
+                <input type="text" id="c3_ping_cliente" placeholder="Ej: Exitoso, 0% pérdida">
+            </div>
+            <div class="form-group full">
+                <label>Ping a 8.8.8.8 (Internet):</label>
+                <input type="text" id="c3_ping_internet" placeholder="Ej: Exitoso, 0% pérdida">
+            </div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="btn-primary" onclick="generarPlantilla()">📋 Generar Plantilla</button>
+        <button class="btn-copy" onclick="copiarTexto()">📑 Copiar al Portapapeles</button>
+        <button class="btn-danger" onclick="limpiarFormulario()">🧹 Limpiar</button>
+    </div>
+
+    <textarea id="resultado" readonly placeholder="La plantilla generada aparecerá aquí automáticamente..."></textarea>
 </div>
 
 <script>
-    function generar() {
-        // ... (Aquí va la lógica de construcción de texto del mensaje anterior) ...
-        // ... (Asegúrate de que no incluya el campo si está vacío) ...
+    function generarPlantilla() {
+        const id = document.getElementById('ticketId').value.trim() || "[ID de Caso]";
+        
+        const um_uptime = document.getElementById('um_uptime').value.trim();
+        const um_mac = document.getElementById('um_mac').value.trim();
+        const um_trafico = document.getElementById('um_trafico').value.trim();
+        const um_potencia = document.getElementById('um_potencia').value.trim();
+        const um_historico = document.getElementById('um_historico').value.trim();
+        
+        const mpls_tiempo = document.getElementById('mpls_tiempo').value.trim();
+        const mpls_ping = document.getElementById('mpls_ping').value.trim();
+        
+        const c3_arp = document.getElementById('c3_arp').value.trim();
+        const c3_ping_cliente = document.getElementById('c3_ping_cliente').value.trim();
+        const c3_ping_internet = document.getElementById('c3_ping_internet').value.trim();
+
+        let texto = `Estimado cliente,\n\n`;
+        texto += `Reciban un cordial saludo.\n\n`;
+        texto += `Hemos revisado el incidente reportado sobre la posible afectación del servicio (${id}). Se realizó una verificación completa de extremo a extremo sobre el enlace, incluyendo validaciones en la última milla, equipos de acceso y red core.\n\n`;
+        texto += `De acuerdo con nuestros sistemas de monitoreo y las pruebas realizadas por el equipo técnico, el servicio actualmente se encuentra OPERATIVO y ESTABLE.\n\n`;
+        texto += `No se evidencian caídas activas, pérdida de conectividad ni degradación dentro de nuestra infraestructura.\n\n`;
+        texto += `A continuación, compartimos las verificaciones realizadas y las evidencias técnicas correspondientes:\n\n`;
+        
+        let seccionUM = "";
+        if (um_uptime) seccionUM += `- Estado del equipo demarcador (CPE) - Uptime del equipo: ${um_uptime}\n`;
+        if (um_mac) seccionUM += `- MAC Address aprendidas en ambos extremos (Cliente / Interconexión): ${um_mac}\n`;
+        if (um_trafico) seccionUM += `- Tráfico actual en puerto LAN: ${um_trafico}\n`;
+        if (um_potencia) seccionUM += `- Niveles de potencia óptica (Puerto Nodo – Cliente) RX / TX: ${um_potencia}\n`;
+        if (um_historico) seccionUM += `- Histórico de eventos del puerto (Flapping / Caídas): ${um_historico}\n`;
+
+        if (seccionUM) {
+            texto += `*VALIDACIONES DE ÚLTIMA MILLA (UM)*\n\n${seccionUM}\n`;
+        }
+
+        let seccionMPLS = "";
+        if (mpls_tiempo) seccionMPLS += `- Estado de la etiqueta VC / Pseudowire - Tiempo desde el último cambio: ${mpls_tiempo}\n`;
+        if (mpls_ping) seccionMPLS += `- Prueba de conectividad sobre VC (Ping): ${mpls_ping}\n`;
+
+        if (seccionMPLS) {
+            texto += `*VALIDACIONES RED MPLS CORE*\n\n${seccionMPLS}\n`;
+        }
+
+        let seccionC3 = "";
+        if (c3_arp) seccionC3 += `- Tabla ARP aprendida en equipo de borde: ${c3_arp}\n`;
+        if (c3_ping_cliente) seccionC3 += `- Prueba de conectividad hacia IP del cliente: ${c3_ping_cliente}\n`;
+        if (c3_ping_internet) seccionC3 += `- Prueba de salida a Internet - Ping hacia DNS público (8.8.8.8): ${c3_ping_internet}\n`;
+
+        if (seccionC3) {
+            texto += `*VALIDACIÓN CAPA 3*\n\n${seccionC3}\n`;
+        }
+
+        texto += `Con base en todas las verificaciones realizadas, no se identifican fallas dentro de nuestra red ni en el tramo de acceso hacia el cliente.\n\n`;
+        texto += `El enlace se encuentra estable, con conectividad activa y sin pérdida de paquetes en las pruebas ejecutadas.\n\n`;
+        texto += `Sugerimos amablemente validar la red interna del sitio (LAN, firewall o equipos intermedios), ya que desde nuestra infraestructura el servicio opera con normalidad.\n\n`;
+        texto += `Al no haber recibido confirmación de su lado, y tras intentos de contacto a los datos registrados sin lograr respuesta, se procedió con el cierre del ticket.\n\n`;
+        texto += `En caso de que requieran retomar la revisión o identifiquen algún comportamiento adicional, pueden generar una nueva solicitud y con gusto estaremos dando seguimiento.\n\n`;
+        texto += `Muchas gracias por su colaboración.`;
+
+        document.getElementById('resultado').value = texto;
     }
-    
-    function copiar() {
-        const copyText = document.getElementById("output");
-        copyText.select();
-        document.execCommand("copy");
-        alert("¡Texto copiado al portapapeles!");
+
+    function copiarTexto() {
+        const textarea = document.getElementById('resultado');
+        textarea.select();
+        document.execCommand('copy');
+        alert('¡Texto copiado al portapapeles!');
+    }
+
+    function limpiarFormulario() {
+        document.querySelectorAll('input, textarea').forEach(el => el.value = '');
     }
 </script>
 </body>
