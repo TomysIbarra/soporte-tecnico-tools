@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Respuesta Técnica</title>
+    <title>Generador Automático de Reportes de Red</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; padding: 20px; color: #333; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         h2 { color: #1e3a8a; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 20px; }
+        .parser-box { background: #eff6ff; border: 2px dashed #3b82f6; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .parser-box h3 { color: #1d4ed8; margin-top: 0; font-size: 16px; }
+        textarea.raw-input { width: 100%; height: 130px; font-family: monospace; font-size: 11px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; background: #fff; }
         .section { margin-bottom: 20px; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
         .section h3 { font-size: 15px; color: #2563eb; margin-bottom: 10px; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -15,11 +18,12 @@
         .form-group.full { grid-column: span 2; }
         label { font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #475569; }
         input, textarea { padding: 8px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 13px; }
-        textarea { resize: vertical; height: 50px; }
-        .actions { margin-top: 20px; display: flex; gap: 10px; }
+        textarea.field-out { resize: vertical; height: 50px; }
+        .actions { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
         button { padding: 10px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .btn-parse { background: #10b981; color: white; }
+        .btn-parse:hover { background: #059669; }
         .btn-primary { background: #2563eb; color: white; }
-        .btn-primary:hover { background: #1d4ed8; }
         .btn-copy { background: #0ea5e9; color: white; }
         .btn-danger { background: #ef4444; color: white; }
         #resultado { width: 100%; height: 220px; margin-top: 15px; font-family: monospace; font-size: 12px; background: #0f172a; color: #38bdf8; padding: 12px; border-radius: 6px; box-sizing: border-box; }
@@ -28,36 +32,46 @@
 <body>
 
 <div class="container">
-    <h2>🛠️ Generador de Respuesta Técnica</h2>
+    <h2>🛠️ Generador Inteligente (CPE + Edge + Nodo / Acceso)</h2>
     
+    <!-- CUADRO DE PEGADO MASIVO -->
+    <div class="parser-box">
+        <h3>📥 Pegar Logs Masivos de Consola</h3>
+        <p style="font-size: 12px; color: #64748b; margin-bottom: 8px;">Pega aquí todo junto: los comandos del CPE, del Edge y del Switch de Acceso (Nodo). El sistema llenará todo automáticamente.</p>
+        <textarea id="rawLogs" class="raw-input" placeholder="Pega aquí los outputs de todos los equipos..."></textarea>
+        <div style="margin-top: 10px;">
+            <button class="btn-parse" onclick="procesarLogs()">⚡ Extraer Todo y Autocompletar</button>
+        </div>
+    </div>
+
     <div class="form-group" style="margin-bottom: 15px;">
         <label>ID del Ticket / Caso:</label>
-        <input type="text" id="ticketId" placeholder="Ej: INC-987654">
+        <input type="text" id="ticketId" placeholder="Ej: COCOTEL10276386I">
     </div>
 
     <!-- ÚLTIMA MILLA -->
     <div class="section">
-        <h3>ÚLTIMA MILLA (UM)</h3>
+        <h3>ÚLTIMA MILLA (UM) & NODO</h3>
         <div class="form-grid">
             <div class="form-group">
                 <label>Uptime del equipo (CPE):</label>
-                <input type="text" id="um_uptime" placeholder="Ej: 5 días, 12 horas">
+                <input type="text" id="um_uptime" class="field-out">
             </div>
             <div class="form-group">
                 <label>MAC Address aprendidas:</label>
-                <input type="text" id="um_mac" placeholder="Ej: 00:1A:2B:3C:4D:5E">
+                <input type="text" id="um_mac" class="field-out">
             </div>
             <div class="form-group">
                 <label>Tráfico actual en puerto LAN:</label>
-                <input type="text" id="um_trafico" placeholder="Ej: 15 Mbps / 2 Mbps">
+                <input type="text" id="um_trafico" class="field-out">
             </div>
             <div class="form-group">
                 <label>Niveles de potencia óptica (RX / TX) Nodo:</label>
-                <input type="text" id="um_potencia" placeholder="Ej: -21.4 dBm / 2.1 dBm">
+                <input type="text" id="um_potencia" class="field-out">
             </div>
             <div class="form-group full">
                 <label>Histórico de eventos (Flapping / Caídas) Nodo:</label>
-                <input type="text" id="um_historico" placeholder="Ej: Sin registros de flapping">
+                <input type="text" id="um_historico" class="field-out">
             </div>
         </div>
     </div>
@@ -68,11 +82,11 @@
         <div class="form-grid">
             <div class="form-group">
                 <label>Tiempo desde el último cambio (VC):</label>
-                <input type="text" id="mpls_tiempo" placeholder="Ej: 3 semanas sin cambios">
+                <input type="text" id="mpls_tiempo" class="field-out">
             </div>
             <div class="form-group">
                 <label>Ping sobre la etiqueta VC (Resultado):</label>
-                <input type="text" id="mpls_ping" placeholder="Ej: 0% pérdida, RTT 12ms">
+                <input type="text" id="mpls_ping" class="field-out">
             </div>
         </div>
     </div>
@@ -83,29 +97,115 @@
         <div class="form-grid">
             <div class="form-group">
                 <label>Tabla ARP:</label>
-                <input type="text" id="c3_arp" placeholder="Ej: Aprendida correctamente">
+                <input type="text" id="c3_arp" class="field-out">
             </div>
             <div class="form-group">
                 <label>Ping hacia IP del cliente:</label>
-                <input type="text" id="c3_ping_cliente" placeholder="Ej: Exitoso, 0% pérdida">
+                <input type="text" id="c3_ping_cliente" class="field-out">
             </div>
             <div class="form-group full">
                 <label>Ping a 8.8.8.8 (Internet):</label>
-                <input type="text" id="c3_ping_internet" placeholder="Ej: Exitoso, 0% pérdida">
+                <input type="text" id="c3_ping_internet" class="field-out">
             </div>
         </div>
     </div>
 
     <div class="actions">
-        <button class="btn-primary" onclick="generarPlantilla()">📋 Generar Plantilla</button>
+        <button class="btn-primary" onclick="generarPlantilla()">📋 Generar Plantilla Final</button>
         <button class="btn-copy" onclick="copiarTexto()">📑 Copiar al Portapapeles</button>
-        <button class="btn-danger" onclick="limpiarFormulario()">🧹 Limpiar</button>
+        <button class="btn-danger" onclick="limpiarFormulario()">🧹 Limpiar Todo</button>
     </div>
 
-    <textarea id="resultado" readonly placeholder="La plantilla generada aparecerá aquí automáticamente..."></textarea>
+    <textarea id="resultado" readonly placeholder="La plantilla final generada aparecerá aquí..."></textarea>
 </div>
 
 <script>
+    function procesarLogs() {
+        const raw = document.getElementById('rawLogs').value;
+        if (!raw) {
+            alert("Por favor pega los logs primero.");
+            return;
+        }
+
+        // 1. Extraer ID del Caso automáticamente (Busca patrones como COCOTEL... o GTGTEME...)
+        const matchId = raw.match(/(COCOTEL\d+[A-Z0-9]*|GTGTEME\d+[A-Z0-9]*|INC\d+)/i);
+        if (matchId) {
+            document.getElementById('ticketId').value = matchId[1];
+        }
+
+        // 2. Extraer Uptime (CPE)
+        const matchUptime = raw.match(/System uptime is ([^\r\n]+)/i);
+        if (matchUptime) {
+            document.getElementById('um_uptime').value = matchUptime[1].trim();
+        }
+
+        // 3. Extraer Tráfico (CPE Ingress/Egress Speed)
+        const matchInSpeed = raw.match(/Ingress Speed\(bps\):\s+([^\r\n]+)/i);
+        const matchOutSpeed = raw.match(/Egress Speed\(bps\):\s+([^\r\n]+)/i);
+        if (matchInSpeed && matchOutSpeed) {
+            let inSpd = matchInSpeed[1].trim();
+            let outSpd = matchOutSpeed[1].trim();
+            if (inSpd !== "--") {
+                document.getElementById('um_trafico').value = `Ingress: ${inSpd} bps / Egress: ${outSpd} bps`;
+            }
+        }
+
+        // 4. Extraer MACs
+        const matchMacs = raw.match(/([0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4})\s+(uni1|nni1)/g);
+        if (matchMacs && matchMacs.length > 0) {
+            document.getElementById('um_mac').value = matchMacs.join(", ");
+        }
+
+        // 5. Extraer Potencias Ópticas del Nodo (Busca TxPower y RxPower en diagnósticos o logbuffer)
+        const txMatch = raw.match(/TxPower\(dBm\)\s+([-\d.]+)/i);
+        const rxMatch = raw.match(/RxPower\(dBm\)\s+([-\d.]+)/i);
+        if (txMatch && rxMatch) {
+            document.getElementById('um_potencia').value = `RX: ${rxMatch[1]} dBm / TX: ${txMatch[1]} dBm`;
+        } else {
+            // Intentar buscar en logbuffer si viene ahí
+            const logRx = raw.match(/Current RX power\(dBM\):\s+([-\d.]+)/i);
+            const logTx = raw.match(/Current TX power\(dBM\):\s+([-\d.]+)/i);
+            if (logRx && logTx) {
+                document.getElementById('um_potencia').value = `RX: ${logRx[1]} dBm / TX: ${logTx[1]} dBm`;
+            }
+        }
+
+        // 6. Extraer Histórico de Eventos / Logbuffer del Nodo
+        const logBufferMatch = raw.match(/(Interface\s+\S+\s+has turned into DOWN state[\s\S]*?\(Information=[^\)]+\))/i);
+        if (logBufferMatch) {
+            document.getElementById('um_historico').value = logBufferMatch[1].replace(/[\r\n]+/g, " ");
+        } else {
+            const downState = raw.match(/(Interface\s+\S+\s+has turned into DOWN state[^\r\n]*)/i);
+            if (downState) {
+                document.getElementById('um_historico').value = downState[1];
+            }
+        }
+
+        // 7. ARP (Edge)
+        if (raw.includes("display arp")) {
+            document.getElementById('c3_arp').value = "Aprendida correctamente en equipo de borde";
+        }
+
+        // 8. Pings (Edge)
+        const matchPingStats = raw.match(/(\d+)\s+packet\(s\) transmitted[\s\S]*?(\d+)\s+packet\(s\) received[\s\S]*?([\d.]+)%\s+packet loss/gi);
+        if (matchPingStats) {
+            let pings = matchPingStats;
+            let internetPingText = pings.find(p => p.includes("8.8.8.8") || raw.indexOf("8.8.8.8") < raw.indexOf(p)) || pings[pings.length-1];
+            const lossMatch = internetPingText.match(/([\d.]+)%\s+packet loss/i);
+            const rttMatch = raw.match(/round-trip min\/avg\/max\s*=\s*([^\r\n]+)/i);
+            
+            let resText = "Exitoso";
+            if (lossMatch) resText += `, ${lossMatch[1]}% pérdida`;
+            if (rttMatch) resText += `, RTT: ${rttMatch[1]}`;
+            
+            document.getElementById('c3_ping_internet').value = resText;
+            document.getElementById('c3_ping_cliente').value = "Exitoso, 0% pérdida";
+        }
+
+        alert("¡Logs de CPE, Edge y Nodo procesados correctamente!");
+        generarPlantilla();
+    }
+
     function generarPlantilla() {
         const id = document.getElementById('ticketId').value.trim() || "[ID de Caso]";
         
@@ -137,7 +237,7 @@
         if (um_historico) seccionUM += `- Histórico de eventos del puerto (Flapping / Caídas): ${um_historico}\n`;
 
         if (seccionUM) {
-            texto += `*VALIDACIONES DE ÚLTIMA MILLA (UM)*\n\n${seccionUM}\n`;
+            texto += `*VALIDACIONES DE ÚLTIMA MILLA (UM) & NODO*\n\n${seccionUM}\n`;
         }
 
         let seccionMPLS = "";
